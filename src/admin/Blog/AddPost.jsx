@@ -9,12 +9,7 @@ import "firebase/compat/firestore"
 
 const AddPost = () => {
 
-  console.log("app",app); // Check if app is initialized
-
-
-  const q = query(collection(app.firestore(), "categories"));
-  console.log("query",q)
-
+  
 
   const [post, setPost] = useState({
     title: "",
