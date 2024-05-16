@@ -1,5 +1,7 @@
 import { getFirestore } from "firebase/firestore";
 import { initializeApp } from "firebase/app";
+import { getStorage } from "firebase/storage";
+import { getAuth } from "firebase/auth";
 const firebaseConfig = {
   apiKey: "AIzaSyBxegQR8mZdb885L_9G3z7Q2GDuhprEqf8",
   authDomain: "blackmagic-indian.firebaseapp.com",
@@ -10,5 +12,7 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-const db = getFirestore();
-export { db ,app};
+const db = getFirestore(app);
+const auth = getAuth(app)
+const storage = getStorage(app);
+export { db ,app,storage,auth};

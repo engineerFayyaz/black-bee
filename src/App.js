@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import Header from "./components/Header/Header";
 import HomePage from "./pages/HomePage";
 import AboutPage from "./pages/AboutPage";
@@ -18,9 +19,16 @@ import {
 import { lightTheme, darkTheme } from "./darkmode/Theme";
 import SingleBlogPage from "./components/Blogs/SingleBlogPage";
 import AddPost from "./admin/Blog/AddPost";
-
+import Register from "./pages/SignUp";
+import SignIn from "./pages/SignIn";
+import PrivateRoute from "./components/PrivateRoutes";
+import ContactRequest from "./admin/ContactInfo/ContactRequest";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 const App = () => {
   const [theme, setTheme] = useState(getThemeMode());
+  const auth = getAuth();
+  const [user, setUser] = useState(null);
+  const location = useLocation();
   useEffect(() => {
     setThemeMode(theme);
   }, [theme]);
@@ -29,15 +37,38 @@ const App = () => {
     theme === "light" ? setTheme("dark") : setTheme("light");
   };
 
+  // handle admin login
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setUser(user);
+    });
+
+    // Cleanup subscription on unmount
+    return () => unsubscribe();
+  }, [auth]);useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setUser(user);
+    });
+
+    // Cleanup subscription on unmount
+    return () => unsubscribe();
+  }, [auth]);
+
+  // Define routes where you don't want to show Header and Footer
+  const noHeaderFooterRoutes = ["/admin","/admin/add_Blog","/admin/signup", "/admin/Contacts_Info"];
+
+  const shouldShowHeaderFooter = !noHeaderFooterRoutes.includes(location.pathname);
+
   return (
     <div className=" ">
       <ThemeProvider theme={theme === "light" ? lightTheme : darkTheme}>
         <>
-          <GlobalStyles />
-          <Header themeToggler={themeToggler} themeMode={theme} />
+        <GlobalStyles />
+          {shouldShowHeaderFooter && <Header themeToggler={themeToggler} themeMode={theme} />}
           
           <Outlet />
-          <Footer />
+          
+          {shouldShowHeaderFooter && <Footer />}
         </>
       </ThemeProvider>
     </div>
@@ -90,9 +121,34 @@ export const AppLayout = createBrowserRouter([
         path: "/contact",
         element: <ContactPage />,
       },
+      
       {
         path: "/admin",
-        element: <AddPost />,
+        element: <SignIn />,
+      },
+      {
+        path: "/admin/signup",
+        element: <Register />,
+      },
+      {
+        path: "/admin/add_Blog",
+        element: <PrivateRoute />, // Wrap protected routes with PrivateRoute
+        children: [
+          {
+            path: "/admin/add_Blog",
+            element: <AddPost />,
+          },
+        ],
+      },
+      {
+        path: "/admin/Contacts_Info",
+        element: <PrivateRoute />, // Wrap protected routes with PrivateRoute
+        children: [
+          {
+            path: "/admin/Contacts_Info",
+            element: <ContactRequest />,
+          },
+        ],
       },
     ],
   },

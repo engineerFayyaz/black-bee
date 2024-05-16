@@ -160,3 +160,94 @@ circle {
   margin-right: 20px; /* Add spacing between images */
   width: 50%;
 }
+
+.blog_cards{
+  width: 320px;
+
+  img{
+    width: 100%;
+    height: 300px;
+    /* object-fit: contain; */
+  }
+  
+  .blog_title{
+    font-weight: 600;
+    font-size: 20px;
+  }
+  .blog_description{
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+  }
+}
+.add_blog_page_title{
+  font-size: 35px !important;
+  font-family: "Montserrat", "Helvetica Neue", Helvetica;
+  font-weight: 700;
+}
+.create_blog_cards{
+
+  label{
+
+    font-family: "Montserrat";
+    font-weight: 600;
+    text-transform: capitalize;
+    color: rgb(64, 62, 62);
+  }
+  input, select{
+    border: 2px solid rgb(235, 230, 230);
+    border-radius: 15px !important;
+    font-family: "Montserrat";
+    font-weight: 500;
+    transition: all .4s ease-in-out;
+  }
+  input:focus, select:focus{
+    border-color: rgb(212, 209, 209);
+    box-shadow: none;
+  }
+}
+
+
+/* authentication pages */
+
+/* login page  */
+.admin-signup-container{
+  background-image: url(./assets/Contact/contact.png) !important;
+
+}
+.admin-login-container{
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #100e0cd3;
+  background-image: url(./assets/Login/loginbg.jpg);
+  background-blend-mode: multiply;
+  background-size: cover;
+  background-position: center;
+}
+.admin-login-container .sign_in_title{
+  font-size: 35px;
+  font-weight: 800;
+  line-height: 35px;
+}
+.admin-login-container .content img {
+  margin: 41px 0px;
+}
+
+.admin-login-container  svg {
+  width: 16px;
+  height: auto;
+}
+.admin-login-container .content{
+  width: 30%;
+  background: white;
+  box-shadow: 0px 0px 7px -1px black;
+  border-radius: 10px;
+  padding: 20px;
+}
+
+/* login page end */

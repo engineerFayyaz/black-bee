@@ -1,20 +1,18 @@
 import React, { useState, useEffect } from "react";
-import { Card, CardBody, Form, Input, Label, Button, Container } from "reactstrap";
+import { Card, CardBody, Form, Input, Label, Button, Container, Row, Col } from "reactstrap";
 import JoditEditor from "jodit-react";
-import { collection, addDoc, query, getDocs } from "firebase/firestore";
-import { app } from "../../FirebaseConfig"; 
-import { toast } from "react-toastify";
-import "firebase/compat/firestore"
-
+import { collection, addDoc, query, getDocs, getFirestore } from "firebase/firestore";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { app } from "../../FirebaseConfig";
+import { toast, ToastContainer } from "react-toastify";
+import "firebase/compat/firestore";
+import "firebase/compat/storage";
+import "react-toastify/dist/ReactToastify.css";
+import { AdminHeader } from "../../components/AdminHeader";
 
 const AddPost = () => {
-
-  console.log("app",app); // Check if app is initialized
-
-
-  const q = query(collection(app.firestore(), "categories"));
-  console.log("query",q)
-
+  const db = getFirestore(app); // Firestore initialization
+  const storage = getStorage(app); // Firebase storage initialization
 
   const [post, setPost] = useState({
     title: "",
@@ -22,6 +20,7 @@ const AddPost = () => {
     category: "",
     date: "",
     status: "",
+    image: null,
   });
 
   const [categories, setCategories] = useState([]);
@@ -31,9 +30,9 @@ const AddPost = () => {
   }, []);
 
   const fetchCategories = async () => {
-    const q = query(collection(app.firestore(), "categories"));
+    const q = query(collection(db, "categories"));
     const querySnapshot = await getDocs(q);
-    const loadedCategories = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    const loadedCategories = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
     setCategories(loadedCategories);
   };
 
@@ -45,13 +44,19 @@ const AddPost = () => {
     setPost({ ...post, description: data });
   };
 
+  const handleImageChange = (event) => {
+    if (event.target.files[0]) {
+      setPost({ ...post, image: event.target.files[0] });
+    }
+  };
+
   const addCategory = async () => {
     if (post.category.trim() === "") {
       toast.error("Please enter a category name.");
       return;
     }
     try {
-      const newCategoryRef = await addDoc(collection(app.firestore(), "categories"), { name: post.category });
+      const newCategoryRef = await addDoc(collection(db, "categories"), { name: post.category });
       const newCategory = { id: newCategoryRef.id, name: post.category };
       setCategories([...categories, newCategory]);
       toast.success("Category added successfully!");
@@ -60,6 +65,16 @@ const AddPost = () => {
       console.error("Error adding category: ", error);
       toast.error("Failed to add category. Please try again later.");
     }
+  };
+
+  const uploadImageAndGetUrl = async (imageFile) => {
+    if (imageFile) {
+      const storageRef = ref(storage, `images/${imageFile.name}`);
+      await uploadBytes(storageRef, imageFile);
+      const imageUrl = await getDownloadURL(storageRef);
+      return imageUrl;
+    }
+    return null;
   };
 
   const createPost = async (event) => {
@@ -79,15 +94,27 @@ const AddPost = () => {
       let categoryId = "";
       const categoryExists = categories.find((cat) => cat.name === post.category);
       if (!categoryExists) {
-        // If category doesn't exist, add it
-        await addCategory();
-        categoryId = categories[categories.length - 1].id; // Get the ID of the newly added category
+        const newCategoryRef = await addDoc(collection(db, "categories"), { name: post.category });
+        categoryId = newCategoryRef.id;
+        const newCategory = { id: categoryId, name: post.category };
+        setCategories([...categories, newCategory]);
       } else {
         categoryId = categoryExists.id;
       }
 
-      const postData = { ...post, categoryId };
-      await addDoc(collection(app.firestore(), "posts"), postData);
+      const imageUrl = await uploadImageAndGetUrl(post.image);
+
+      const postData = { 
+        title: post.title,
+        description: post.description,
+        categoryId: categoryId,
+        categoryName: post.category,
+        date: post.date,
+        status: post.status,
+        imageUrl: imageUrl
+      };
+
+      await addDoc(collection(db, "posts"), postData);
       toast.success("Post created successfully!!");
       setPost({
         title: "",
@@ -95,10 +122,11 @@ const AddPost = () => {
         category: "",
         date: "",
         status: "",
+        image: null,
       });
     } catch (error) {
-      console.error("Error adding document: ", error);
-      toast.error("Failed to create post. Please try again later.");
+      console.log("Error adding document: ", error, error.message, error.code);
+      toast.error("Failed to create post. Please try again later.",error, error.message, error.code);
     }
   };
 
@@ -109,16 +137,25 @@ const AddPost = () => {
       category: "",
       date: "",
       status: "",
+      image: null,
     });
   };
 
   return (
-    <div className="wrapper">
-      <Card className="shadow-sm border-0 mt-2">
+    <>
+    <ToastContainer />
+    <AdminHeader />
+    <main className="lg:px-40 px-10 pt-40 flex flex-col gap-20 lg:gap-40  lg:text-start text-center text-wrap ">
+    <Container className="pb-5">
+      <Row  className="d-flex align-items-center  justify-content-center  " >
+      <Col md={12}>
+      <div className="wrapper">
+      <Card className="shadow-sm border-0 create_blog_cards ">
         <CardBody>
-          <h3>What's on your mind?</h3>
+          <h1 className="add_blog_page_title">What's on your mind?</h1>
           <Form onSubmit={createPost}>
-            <div className="my-3">
+            <Row>
+            <div className="my-3 text-start">
               <Label for="title">Post title</Label>
               <Input
                 type="text"
@@ -130,33 +167,17 @@ const AddPost = () => {
                 value={post.title}
               />
             </div>
-
-            <div className="my-3">
+            <div className="my-3 text-start">
               <Label for="description">Description</Label>
               <JoditEditor
                 value={post.description}
                 onChange={(newContent) => contentFieldChanged(newContent)}
               />
             </div>
-
-            <div className="my-3">
-              <Label for="category">Category</Label>
-              <div className="d-flex">
-                <Input
-                  type="text"
-                  placeholder="Enter category"
-                  className="rounded-0 me-2"
-                  name="category"
-                  onChange={fieldChanged}
-                  value={post.category}
-                />
-                <Button type="button" onClick={addCategory} className="rounded-0" color="primary">
-                  Add Category
-                </Button>
-              </div>
-            </div>
-
-            <div className="my-3">
+            </Row>
+            <Row>
+              <Col>
+              <div className="my-3 text-start">
               <Label for="date">Date</Label>
               <Input
                 type="date"
@@ -168,7 +189,7 @@ const AddPost = () => {
               />
             </div>
 
-            <div className="my-3">
+            <div className="my-3 text-start">
               <Label for="status">Status</Label>
               <Input
                 type="select"
@@ -178,17 +199,77 @@ const AddPost = () => {
                 onChange={fieldChanged}
                 value={post.status}
               >
-                <option disabled value="">Select status</option>
+                <option disabled value="">
+                  Select status
+                </option>
                 <option value="Draft">Draft</option>
                 <option value="Published">Published</option>
               </Input>
             </div>
+            <div className="my-3 text-start">
+                <Label for="categorySelect">Select Category</Label>
+                <Input
+                  type="select"
+                  id="categorySelect"
+                  className="rounded-0"
+                  name="category"
+                  onChange={fieldChanged}
+                  value={post.category}
+                >
+                  <option disabled value="">
+                    Select category
+                  </option>
+                  {categories.map((cat) => (
+                    <option key={cat.id} value={cat.name}>
+                      {cat.name}
+                    </option>
+                  ))}
+                </Input>
+              </div>
+              </Col>
 
-            <Container className="text-center">
-              <Button type="submit" className="rounded-0" color="primary">
+              <Col>
+            
+            <div className="my-3 text-start">
+              <Label for="image">Image</Label>
+              <Input
+                type="file"
+                id="image"
+                className="rounded-0"
+                name="image"
+                onChange={handleImageChange}
+              />
+            </div>
+            <div className="my-3 text-start">
+              <Label for="category">Create New Category</Label>
+              <div className="d-flex">
+                <Input
+                  type="text"
+                  placeholder="Enter category"
+                  className="rounded-0 me-2 w-75"
+                  name="category"
+                  onChange={fieldChanged}
+                  value={post.category}
+                />
+                <Button type="button" onClick={addCategory} className="rounded-3 w-50" color="primary">
+                  Add Category
+                </Button>
+              </div>
+            </div>
+              </Col>
+             
+            </Row>
+            <Container className="text-end mt-4">
+              <Button type="submit" className="btn btn-success 
+              " color="primary">
                 Create Post
               </Button>
-              <Button type="button" onClick={resetForm} className="rounded-0 ms-2" color="danger">
+              <Button
+                type="button"
+                onClick={resetForm}
+                className=" ms-2 btn btn-danger"
+                color="danger"
+              >
                 Reset
               </Button>
             </Container>
@@ -196,6 +277,14 @@ const AddPost = () => {
         </CardBody>
       </Card>
     </div>
+      </Col>
+      </Row>
+    </Container>
+    </main>
+   
+   
+    </>
+    
   );
 };
 
