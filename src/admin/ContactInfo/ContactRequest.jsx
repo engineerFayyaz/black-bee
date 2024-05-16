@@ -30,8 +30,7 @@ function ContactRequest() {
         toast.error("Error fetching contact requests");
       }
     };
-    
-
+  
     fetchContactRequests();
   }, []);
 
