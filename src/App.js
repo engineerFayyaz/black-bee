@@ -24,6 +24,7 @@ import SignIn from "./pages/SignIn";
 import PrivateRoute from "./components/PrivateRoutes";
 import ContactRequest from "./admin/ContactInfo/ContactRequest";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
+import BlogSingle from "./pages/BlogsSingle";
 const App = () => {
   const [theme, setTheme] = useState(getThemeMode());
   const auth = getAuth();
@@ -88,6 +89,10 @@ export const AppLayout = createBrowserRouter([
         path: "/about",
         element: <AboutPage />,
       },
+      // {
+      //   path: "/blogs/blogsSingle",
+      //   element: <BlogSingle />,
+      // },
       {
         path: "/services",
         // element: <ServicesPage />,
@@ -109,12 +114,10 @@ export const AppLayout = createBrowserRouter([
       {
         path: "/blogs",
         element: <BlogsPage />,
-        children: [
-          {
-            path: "/blogs/:title",
-            element: <SingleBlogPage />,
-          },
-        ],
+      },
+      {
+        path: "/blogs/:id",
+        element: <BlogSingle />,
       },
 
       {

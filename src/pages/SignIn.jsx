@@ -43,11 +43,15 @@ const SignIn = () => {
     <>
       <div className="container-fluid admin-login-container d-flex align-items-center justify-content-center m-0">
         <div className="content">
+          <div className="logo mb-5">
+          <h1 class="text-4xl text-center font-bold font-montserrat text-light"><a href="/">blackBee.</a> </h1>
+          </div>
           <div className="text-center">
-            <h1 className="text-xl font-montserrat my-3 mb-5 sign_in_title">Sign In</h1>
+            <h1 className="text-xl font-montserrat my-3 sign_in_title">Sign in to your account</h1>
           </div>
           <form className="content__form d-flex flex-column gap-3 " id="login" onSubmit={handleLogin}>
             <div className="content__inputs ">
+                <label htmlFor="email">Your Email <span>*</span></label>
                 <input
                   required
                   type="text"
@@ -56,7 +60,7 @@ const SignIn = () => {
                   onChange={(e) => setEmail(e.target.value)}
                   className="w-100 rounded-3 border-1 p-2 my-2"
                 />
-                
+                <label htmlFor="email">Your Password <span>*</span></label>
                 <input
                   required
                   type="password"
