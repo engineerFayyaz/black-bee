@@ -25,6 +25,8 @@ import PrivateRoute from "./components/PrivateRoutes";
 import ContactRequest from "./admin/ContactInfo/ContactRequest";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import BlogSingle from "./pages/BlogsSingle";
+
+
 const App = () => {
   const [theme, setTheme] = useState(getThemeMode());
   const auth = getAuth();

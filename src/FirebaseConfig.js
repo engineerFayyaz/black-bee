@@ -3,16 +3,16 @@ import { initializeApp } from "firebase/app";
 import { getStorage } from "firebase/storage";
 import { getAuth } from "firebase/auth";
 const firebaseConfig = {
-  apiKey: "AIzaSyBxegQR8mZdb885L_9G3z7Q2GDuhprEqf8",
-  authDomain: "blackmagic-indian.firebaseapp.com",
-  projectId: "blackmagic-indian",
-  storageBucket: "blackmagic-indian.appspot.com",
-  messagingSenderId: "144586616944",
-  appId: "1:144586616944:web:642d9d035c10d9fce704b5"
+  apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
+  authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.REACT_APP_FIREBASE_APP_ID
 };
-
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
-const auth = getAuth(app)
+const auth = getAuth(app);
 const storage = getStorage(app);
-export { db ,app,storage,auth};
+
+export { db, app, storage, auth };
