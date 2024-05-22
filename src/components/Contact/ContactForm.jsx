@@ -38,7 +38,7 @@ const ContactForm = () => {
     if (!validate()) return;
 
     try {
-      await addDoc(collection(db, "contactForms"), formData);
+      await addDoc(collection(db, "contact_details"), formData);
       setFormSubmitted(true);
       toast.success("Your request has been submitted");
 

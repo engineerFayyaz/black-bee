@@ -18,7 +18,7 @@ function ContactRequest() {
   useEffect(() => {
     const fetchContactRequests = async () => {
       try {
-        const contactRequestsRef = collection(db, "contactForms");
+        const contactRequestsRef = collection(db, "contact_details");
         const contactRequestsSnapshot = await getDocs(contactRequestsRef);
         const contactRequestsList = contactRequestsSnapshot.docs.map((doc) => ({
           id: doc.id, // Include document ID
@@ -59,7 +59,7 @@ function ContactRequest() {
     <ToastContainer />
       <AdminHeader />
       <main className="lg:px-40 px-10 pt-40 flex flex-col gap-20 lg:gap-40  lg:text-start text-center text-wrap ">
-        <Container>
+        <Container >
           <div className="text-center  mt-3 mb-5">
           <span className="lg:text-5xl text-bold text-2xl font-montserrat lg:py-6 aos-init aos-animate" data-aos="fade-up">Contact Requests</span>
           </div>
@@ -71,7 +71,7 @@ function ContactRequest() {
                     <th>Name</th>
                     <th>Email</th>
                     <th>Contact_Number</th>
-                    <th>Message</th>
+                    {/* <th>Message</th> */}
                     <th>Action</th>
                   </tr>
                 </thead>
@@ -81,7 +81,7 @@ function ContactRequest() {
                       <td>{request.name}</td>
                       <td>{request.email}</td>
                       <td>{request.phone}</td>
-                      <td>{request.message}</td>
+                      {/* <td>{request.message}</td> */}
                       <td>
                         <button className="btn btn-danger" onClick={() => handleDelete(request.id)} >
                         Delete</button>

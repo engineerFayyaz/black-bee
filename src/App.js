@@ -25,6 +25,7 @@ import PrivateRoute from "./components/PrivateRoutes";
 import ContactRequest from "./admin/ContactInfo/ContactRequest";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import BlogSingle from "./pages/BlogsSingle";
+import ImportData from "./pages/ImportData";
 
 
 const App = () => {
@@ -91,6 +92,8 @@ export const AppLayout = createBrowserRouter([
         path: "/about",
         element: <AboutPage />,
       },
+
+      
       // {
       //   path: "/blogs/blogsSingle",
       //   element: <BlogSingle />,
@@ -111,7 +114,13 @@ export const AppLayout = createBrowserRouter([
             path: "/services/media-buying",
             element: <MediaBuyingPage />,
           },
+          
         ],
+      },
+
+      {
+        path: "/import-data",
+        element: <ImportData/>,
       },
       {
         path: "/blogs",

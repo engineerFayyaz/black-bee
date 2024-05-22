@@ -10,7 +10,7 @@ const BlogMain = () => {
   useEffect(() => {
     const fetchBlogData = async () => {
       const db = getFirestore(app);
-      const querySnapshot = await getDocs(collection(db, "posts"));
+      const querySnapshot = await getDocs(collection(db, "blog collection"));
       const blogs = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
       setBlogData(blogs);
     };
