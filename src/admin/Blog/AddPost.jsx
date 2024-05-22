@@ -64,7 +64,7 @@ const AddPost = () => {
   };
 
   const fetchPosts = async () => {
-    const q = query(collection(db, "blog collection"));
+    const q = query(collection(db, "blog"));
     const querySnapshot = await getDocs(q);
     const loadedPosts = querySnapshot.docs.map((doc) => ({
       id: doc.id,
