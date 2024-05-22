@@ -135,7 +135,7 @@ const AddPost = () => {
         (cat) => cat.name === post.category
       );
       if (!categoryExists) {
-        const newCategoryRef = await addDoc(collection(db, "categories"), {
+        const newCategoryRef = await addDoc(collection(db, "blog_categories"), {
           name: post.category,
         });
         categoryId = newCategoryRef.id;
