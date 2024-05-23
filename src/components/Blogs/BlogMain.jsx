@@ -6,17 +6,31 @@ import { app } from "../../FirebaseConfig";
 
 const BlogMain = () => {
   const [blogData, setBlogData] = useState(null);
+  const [postData, setPostData] = useState(null); // Added state for posts
 
   useEffect(() => {
-    const fetchBlogData = async () => {
+    const fetchBlogAndPostData = async () => {
       const db = getFirestore(app);
-      const querySnapshot = await getDocs(collection(db, "blog collection"));
-      const blogs = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+  
+      // Fetch blogs
+      const blogQuerySnapshot = await getDocs(collection(db, "blog"));
+      const blogs = blogQuerySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+  
+      // Fetch posts
+      const postQuerySnapshot = await getDocs(collection(db, "posts"));
+      const posts = postQuerySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+  
+      console.log("Posts:", posts); // Add this line to check the fetched post data
+  
+      // Update state with both blogs and posts
       setBlogData(blogs);
+      setPostData(posts);
     };
-
-    fetchBlogData();
+  
+    fetchBlogAndPostData();
   }, []);
+  
+  
 
   const extractTextFromHtml = (html) => {
     const doc = new DOMParser().parseFromString(html, "text/html");
