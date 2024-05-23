@@ -50,11 +50,11 @@ const AddPost = () => {
 
   useEffect(() => {
     fetchCategories();
-    fetchPosts();
+    fetchAllPosts(); // Fetch data from both collections
   }, []);
 
   const fetchCategories = async () => {
-    const q = query(collection(db, "categories"));
+    const q = query(collection(db, "blog_categories"));
     const querySnapshot = await getDocs(q);
     const loadedCategories = querySnapshot.docs.map((doc) => ({
       id: doc.id,
@@ -64,13 +64,28 @@ const AddPost = () => {
   };
 
   const fetchPosts = async () => {
-    const q = query(collection(db, "blog"));
+    const q = query(collection(db, "posts"));
     const querySnapshot = await getDocs(q);
-    const loadedPosts = querySnapshot.docs.map((doc) => ({
+    return querySnapshot.docs.map((doc) => ({
       id: doc.id,
       ...doc.data(),
+      collectionName: "posts",
     }));
-    setPosts(loadedPosts);
+  };
+  const fetchBlogs = async () => {
+    const q = query(collection(db, "blog"));
+    const querySnapshot = await getDocs(q);
+    return querySnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+      collectionName: "blog",
+    }));
+  };
+
+  const fetchAllPosts = async () => {
+    const postsData = await fetchPosts();
+    const blogsData = await fetchBlogs();
+    setPosts([...postsData, ...blogsData]);
   };
 
   const fieldChanged = (event) => {
@@ -93,7 +108,7 @@ const AddPost = () => {
       return;
     }
     try {
-      const newCategoryRef = await addDoc(collection(db, "categories"), {
+      const newCategoryRef = await addDoc(collection(db, "blog_categories"), {
         name: post.category,
       });
       const newCategory = { id: newCategoryRef.id, name: post.category };
@@ -159,6 +174,9 @@ const AddPost = () => {
 
       if (editMode) {
         // Update post
+        if (typeof editPostId !== 'string') {
+          throw new TypeError('Invalid editPostId');
+        }
         const postRef = doc(db, "posts", editPostId);
         await updateDoc(postRef, postData);
         toast.success("Post updated successfully!!");
@@ -170,16 +188,11 @@ const AddPost = () => {
         toast.success("Post created successfully!!");
       }
 
-      fetchPosts(); // Refresh posts list
+      fetchAllPosts(); // Refresh posts list
       resetForm();
     } catch (error) {
-      console.log("Error adding document: ", error, error.message, error.code);
-      toast.error(
-        "Failed to create post. Please try again later.",
-        error,
-        error.message,
-        error.code
-      );
+      console.log("Error adding document: ", error);
+      toast.error("Failed to create post. Please try again later.");
     }
   };
 
@@ -192,6 +205,8 @@ const AddPost = () => {
       status: "",
       image: null,
     });
+    setEditMode(false);
+    setEditPostId(null);
   };
 
   const editPost = (post) => {
@@ -208,26 +223,24 @@ const AddPost = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const deletePost = async (postId) => {
+  const deletePost = async (postId, collectionName) => {
     try {
-      await deleteDoc(doc(db, "posts", postId));
+      await deleteDoc(doc(db, collectionName, postId));
       toast.success("Post deleted successfully!!");
-      fetchPosts(); // Refresh posts list
+      fetchAllPosts(); // Refresh posts list
     } catch (error) {
       console.error("Error deleting post: ", error);
       toast.error("Failed to delete post. Please try again later.");
     }
   };
 
-  // Utility function to truncate text
   const truncateText = (text, maxLength) => {
-    if (text.length <= maxLength) {
-      return text;
+    if (text.length > maxLength) {
+      return text.substring(0, maxLength) + "...";
     }
-    return text.substr(0, maxLength) + "...";
+    return text;
   };
 
-  // Utility function to strip HTML tags from text
   const stripHtmlTags = (html) => {
     const doc = new DOMParser().parseFromString(html, "text/html");
     return doc.body.textContent || "";
@@ -235,56 +248,50 @@ const AddPost = () => {
 
   return (
     <>
-      <ToastContainer />
       <AdminHeader />
-      <main className="lg:px-40 px-10 pt-40 flex flex-col gap-10 lg:gap-20 lg:text-start text-center text-wrap">
-        <Container >
-          <Row className="d-flex align-items-center justify-content-center">
+      <ToastContainer />
+      <main className="add_blog_container py-3">
+        <Container>
+          <Row>
             <Col md={12}>
-              <div className="wrapper">
-                <Card className="shadow-sm border-0 create_blog_cards">
+              <div className="my-3 text-center">
+                <Card className="border-0 rounded-0 p-4 card_shadow">
                   <CardBody>
-                    <h1 className="add_blog_page_title">
-                      {editMode ? "Edit Post" : "What's on your mind?"}
-                    </h1>
+                    <h3>{editMode ? "Update Post" : "Create New Post"}</h3>
                     <Form onSubmit={createPost}>
                       <Row>
-                        <div className="my-3 text-start">
-                          <Label for="title">Post title</Label>
-                          <Input
-                            type="text"
-                            id="title"
-                            placeholder="Enter title"
-                            className="rounded-0"
-                            name="title"
-                            onChange={fieldChanged}
-                            value={post.title}
-                          />
-                        </div>
-                        <div className="my-3 text-start">
-                          <Label for="description">Description</Label>
-                          <JoditEditor
-                            value={post.description}
-                            onChange={(newContent) =>
-                              contentFieldChanged(newContent)
-                            }
-                          />
-                        </div>
-                      </Row>
-                      <Row>
                         <Col>
+                          <div className="my-3 text-start">
+                            <Label for="title">Post Title</Label>
+                            <Input
+                              type="text"
+                              id="title"
+                              placeholder="Enter here"
+                              className="rounded-0"
+                              name="title"
+                              onChange={fieldChanged}
+                              value={post.title}
+                            />
+                          </div>
+                          <div className="my-3 text-start">
+                            <Label for="description">Post Content</Label>
+                            <JoditEditor
+                              value={post.description}
+                              onChange={contentFieldChanged}
+                            />
+                          </div>
                           <div className="my-3 text-start">
                             <Label for="date">Date</Label>
                             <Input
                               type="date"
                               id="date"
+                              placeholder="Enter here"
                               className="rounded-0"
                               name="date"
                               onChange={fieldChanged}
                               value={post.date}
                             />
                           </div>
-
                           <div className="my-3 text-start">
                             <Label for="status">Status</Label>
                             <Input
@@ -385,9 +392,9 @@ const AddPost = () => {
         <Container className="mb-5">
           <Row>
             <Col md={12}>
-            <h1 className="add_blog_page_title mb-3">
-                      Manage All your Posts Here 
-                    </h1>
+              <h1 className="add_blog_page_title mb-3">
+                Manage All your Posts Here
+              </h1>
               <Table striped bordered hover>
                 <thead>
                   <tr>
@@ -413,7 +420,7 @@ const AddPost = () => {
                         <Button
                           color="success"
                           size="sm"
-                          className="px-3 "
+                          className="px-3"
                           onClick={() => editPost(post)}
                         >
                           Edit
@@ -421,7 +428,7 @@ const AddPost = () => {
                         <Button
                           color="danger"
                           size="sm"
-                          onClick={() => deletePost(post.id)}
+                          onClick={() => deletePost(post.id, post.collectionName)}
                         >
                           Delete
                         </Button>
